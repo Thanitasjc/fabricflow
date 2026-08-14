@@ -13,6 +13,17 @@ fi
 
 php artisan config:clear || true
 php artisan migrate --force
+
+# First boot: seed catalog/CMS when the DB is empty (Render Free has no Shell).
+CATEGORY_COUNT="$(
+  php -r 'require "vendor/autoload.php"; $app = require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); echo (int) App\Models\Category::query()->count();'
+)" || CATEGORY_COUNT="0"
+
+if [[ "${CATEGORY_COUNT}" == "0" ]]; then
+  echo "Empty catalog detected — running database seed..."
+  php artisan db:seed --force
+fi
+
 php artisan storage:link || true
 
 PORT="${PORT:-8000}"

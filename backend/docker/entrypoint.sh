@@ -11,6 +11,13 @@ if [[ -n "${DB_URL:-}" || -n "${DATABASE_URL:-}" ]]; then
   export DB_SSLMODE="${DB_SSLMODE:-require}"
 fi
 
+# Prefer Render's public HTTPS URL so Filament assets are not emitted as http://
+if [[ -n "${RENDER_EXTERNAL_URL:-}" ]]; then
+  export APP_URL="${RENDER_EXTERNAL_URL}"
+elif [[ -n "${APP_URL:-}" && "${APP_URL}" == http://* ]]; then
+  export APP_URL="https://${APP_URL#http://}"
+fi
+
 php artisan config:clear || true
 php artisan migrate --force
 

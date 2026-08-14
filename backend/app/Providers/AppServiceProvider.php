@@ -20,6 +20,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Render terminates TLS at the proxy; artisan serve sees http internally.
+        // Force https so Filament CSS/JS URLs are not blocked as mixed content.
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+
+            $appUrl = rtrim((string) config('app.url'), '/');
+            if ($appUrl !== '' && str_starts_with($appUrl, 'http://')) {
+                URL::forceRootUrl(preg_replace('#^http://#', 'https://', $appUrl));
+            }
+        }
+
         // Keep storage/preview URLs on the same host the admin is opened with
         // (localhost vs 127.0.0.1) so Filament FilePond can show image previews.
         if (! $this->app->runningInConsole() && $this->app->environment('local')) {

@@ -18,6 +18,7 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 COPY . .
 RUN composer dump-autoload --optimize \
     && php artisan package:discover --ansi || true \
+    && php artisan filament:assets --ansi || true \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
     && chmod -R ug+rwx storage bootstrap/cache
 

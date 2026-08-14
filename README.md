@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FabricFlow
 
-## Getting Started
+Premium textile retail + wholesale (B2B/B2C) — Next.js frontend + Laravel/Filament backend.
 
-First, run the development server:
+## Frontend (Next.js)
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Optional `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
+```
 
-## Learn More
+## Backend (Laravel + Filament Admin)
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cd backend
+composer install
+php artisan migrate --seed
+php artisan storage:link
+php artisan serve
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Seed ดึงจาก mock Frontend (`scripts/export-frontend-seed.mts` → `backend/database/data/frontend-seed.json`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+อัปเดต seed จาก Frontend ใหม่:
 
-## Deploy on Vercel
+```bash
+npx tsx scripts/export-frontend-seed.mts
+cd backend && php artisan db:seed --force
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Admin CRUD: http://127.0.0.1:8000/admin  
+- Admin login: `admin@fabricflow.test` / `password`  
+- Customer portal: http://localhost:3000/login → `/account`  
+- Portal demo: `customer@fabricflow.test` / `password`  
+- Favorites: `/favorites` · Compare: `/compare` (บันทึกในเบราว์เซอร์)  
+- เมกะเมนูอุตสาหกรรม (การ์ดย่อย): Admin → **Website → ผ้าแต่ละอุตสาหกรรม** (`/admin/industries`)  
+- Brands page `/brands`: Admin → **Website → แบรนด์** (`/admin/brands`)  
+- Public API: http://127.0.0.1:8000/api/*
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Corporate Admin modules (`/admin`)
+
+| Group | Modules |
+|------|---------|
+| CRM | Companies, Contacts, Customer Groups, Customers, Leads, Opportunities (Pipeline), Activities, Contact inbox |
+| Sales | Quotations, Sales Orders (+ credit check + stock deduct) |
+| Inventory | Warehouses, Lots/Rolls, Stock movements |
+| Purchasing | Suppliers, Purchase Orders, Goods Receipts (post → stock in) |
+| Finance | Invoices, Payments |
+| Catalog | Categories, Fabric products (GSM, composition, retail/wholesale/dealer/VIP) |
+| Website | Header Menu, Logo/Branding, Hero, Industries, Brands, Articles, Services |
+
+**B2B flow:** Lead → Company/Contact → Opportunity → Quotation → Sales Order → Invoice/Payment  
+**Stock flow:** PO → Goods Receipt (post) → Warehouse/Lot → Order confirm → Stock out  
+
+RBAC roles (Spatie): `super_admin`, `ceo`, `sales_manager`, `sales_staff`, `crm_staff`, warehouse/purchasing/finance roles.
+
+Images use Filament **FileUpload** — click the upload area to pick a file from your computer (stored in `storage/app/public`).
+
+### API endpoints
+
+- `GET /api/categories`
+- `GET /api/products` (`?category=&industry=&featured=1&q=`)
+- `GET /api/products/{slug}`
+- `GET /api/industries` / `GET /api/industries/{slug}`
+- `GET /api/articles` / `GET /api/articles/{slug}`
+- `GET /api/services` / `GET /api/services/{slug}`
+- `GET /api/hero-slides`
+- `GET /api/branding` (logo + brand text)
+- `GET /api/menus?location=header`
+- `GET /api/brands` · `GET /api/brands/{slug}`
+- `POST /api/contact`
+- `POST /api/auth/register` · `POST /api/auth/login` · `GET /api/auth/me` · `POST /api/auth/logout`
+- `GET /api/portal/dashboard` · `/orders` · `/quotations` · `/invoices` (Bearer token)

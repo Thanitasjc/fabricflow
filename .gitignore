@@ -32,9 +32,18 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+!backend/.env.example
 
 # vercel
 .vercel
+
+# backend heavy/local
+backend/vendor/
+backend/node_modules/
+backend/storage/app/public/**
+!backend/storage/app/public/.gitignore
+backend/public/storage
 
 # typescript
 *.tsbuildinfo
